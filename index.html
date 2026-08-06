@@ -157,6 +157,60 @@ input:focus,textarea:focus{outline:none;border-bottom-color:var(--ai)}
   content:"";position:absolute;top:-18px;right:-18px;width:36px;height:36px;
   background:var(--shu);transform:rotate(45deg);
 }
+@media (hover:hover){
+  .deck-item{transition:transform .18s,box-shadow .18s}
+  .deck-item:hover{transform:translateY(-3px) rotate(-.4deg);box-shadow:0 6px 18px rgba(0,0,0,.5)}
+}
+@keyframes dealIn{from{opacity:0;transform:translateY(14px) rotate(-1deg)}to{opacity:1;transform:none}}
+.deck-item.deal{animation:dealIn .32s both}
+@media (prefers-reduced-motion:reduce){.deck-item.deal{animation:none}.deck-item:hover{transform:none}}
+
+/* ---- 見開きモード ---- */
+.spread{display:grid;grid-template-columns:repeat(auto-fill,minmax(520px,1fr));gap:18px}
+@media(max-width:600px){.spread{grid-template-columns:1fr}}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:16px;position:relative;cursor:pointer}
+.pair::before,.pair::after{
+  content:"";position:absolute;left:50%;transform:translateX(-50%);
+  width:11px;height:11px;border:2.5px solid #8A8E99;border-radius:50%;
+  background:var(--desk);z-index:2;
+}
+.pair::before{top:24%}.pair::after{bottom:24%}
+@media (hover:hover){
+  .pair .mini{transition:transform .18s}
+  .pair:hover .mini:first-child{transform:rotate(-.6deg)}
+  .pair:hover .mini:last-child{transform:rotate(.6deg)}
+}
+.mini{
+  background:var(--paper);color:var(--ink);border-radius:12px;
+  padding:13px 14px;font-size:12.5px;line-height:1.55;
+  box-shadow:0 2px 8px rgba(0,0,0,.35);overflow:hidden;position:relative;
+}
+.mini .mq{font-size:10px;letter-spacing:.1em;color:var(--ink-soft);font-weight:700;margin-top:8px}
+.mini .mhead{font-weight:700;font-size:13.5px;margin-bottom:2px}
+.mini .mtag{font-size:11px;font-weight:700;color:var(--ai-deep)}
+.mini .mtag.ng{color:var(--shu)}
+.mini.backside{background:#FBF8F0}
+.mini .mlesson{font-weight:700;font-size:14.5px;border-bottom:2px solid var(--ink);padding-bottom:6px;margin-bottom:6px}
+.mini.openb{background:#EFEAD9;border:1.5px dashed #C9C2AC;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);font-size:12.5px}
+.mini.redc::after{content:"";position:absolute;top:-16px;right:-16px;width:32px;height:32px;background:var(--shu);transform:rotate(45deg)}
+
+/* ---- 箱ツールバー ---- */
+.box-tools{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+.box-tools .chip{background:#262A33;border-color:#363B46;color:#9DA1AC}
+.box-tools .chip.on{background:var(--gold);border-color:var(--gold);color:#1B1E26}
+.searchbox{
+  flex:1;min-width:150px;border:1.5px solid #363B46;background:#262A33;
+  color:var(--paper);border-radius:999px;padding:7px 14px;font:inherit;font-size:13px;
+}
+.searchbox:focus{outline:none;border-color:var(--gold)}
+.searchbox::placeholder{color:#71757F}
+
+/* ---- めくりモード ---- */
+.rev-count{color:#9DA1AC;font-size:12px;letter-spacing:.14em;text-align:center;margin-bottom:10px}
+.rev-btns{display:flex;gap:10px;margin-top:14px}
+.rev-btns .btn{margin-top:0;padding:12px}
+.rev-hint{color:#71757F;font-size:11px;text-align:center;margin-top:10px;letter-spacing:.06em}
+
 .sec-title{font-size:12px;letter-spacing:.16em;color:#8A8E99;margin:16px 2px 10px;font-weight:600}
 .empty{color:#71757F;font-size:13px;text-align:center;padding:34px 10px;line-height:1.9}
 
@@ -260,7 +314,7 @@ td .ok{color:#7FB394}td .ng{color:#E07868}
 
   <!-- 迷いカード 表面 -->
   <div id="form-normal" class="card">
-    <div class="corner" id="corner-preview">R? G?</div>
+    <div class="corner" id="corner-preview">ルール内・直感◯</div>
 
     <div class="row2">
       <div>
@@ -283,11 +337,11 @@ td .ok{color:#7FB394}td .ng{color:#E07868}
       <button class="chip" data-v="軟調">軟調</button>
     </div>
 
-    <div class="f-label">角の記号（ルール / 直感 / 量）</div>
+    <div class="f-label">状態（タップで切替: ルール / 直感 / 量）</div>
     <div class="chips">
-      <button class="chip on matsu" id="n-rule" onclick="togglePM(this)">R+</button>
-      <button class="chip on matsu" id="n-gut" onclick="togglePM(this)">G+</button>
-      <button class="chip" id="n-sflag" onclick="toggleFlag(this)">S!（量に不安）</button>
+      <button class="chip on matsu" id="n-rule" data-v="+" onclick="togglePM(this)">ルール内</button>
+      <button class="chip on matsu" id="n-gut" data-v="+" onclick="togglePM(this)">直感◯</button>
+      <button class="chip" id="n-sflag" onclick="toggleFlag(this)">量に不安</button>
       <button class="chip" id="n-loss" onclick="toggleFlag(this)">直前に損失あり</button>
     </div>
 
@@ -347,6 +401,12 @@ td .ok{color:#7FB394}td .ng{color:#E07868}
 
 <!-- ============ カード箱 ============ -->
 <section id="view-box" class="hidden">
+  <div class="box-tools">
+    <button class="chip vchip on" data-v="list">リスト</button>
+    <button class="chip vchip" data-v="spread">見開き</button>
+    <button class="chip vchip" data-v="review">めくる ▶</button>
+    <input type="text" id="searchbox" class="searchbox" placeholder="検索（銘柄・教訓・本文）">
+  </div>
   <div class="filter" id="box-filter">
     <button class="chip on" data-f="all">すべて</button>
     <button class="chip" data-f="open">未決着</button>
@@ -362,7 +422,7 @@ td .ok{color:#7FB394}td .ng{color:#E07868}
 <section id="view-stats" class="hidden">
   <div class="hint dark" id="storage-line" style="margin:0 2px 12px"></div>
   <div class="stat-grid" id="stat-grid"></div>
-  <div class="sec-title">角の記号 × プロセス</div>
+  <div class="sec-title">迷いの型 × プロセス</div>
   <table id="tag-table"></table>
   <div class="sec-title">見送りの答え合わせ</div>
   <table id="mio-table"></table>
@@ -378,6 +438,24 @@ td .ok{color:#7FB394}td .ng{color:#E07868}
 <!-- 裏面記入 / 詳細めくり -->
 <div id="overlay" class="overlay hidden" onclick="if(event.target===this)closeOverlay()">
   <div class="flip-wrap"><div id="ov-content"></div></div>
+</div>
+
+<!-- めくりモード -->
+<div id="rev-ov" class="overlay hidden" onclick="if(event.target===this)closeReview()">
+  <div class="flip-wrap">
+    <div class="rev-count" id="rev-count"></div>
+    <div id="rev-card"></div>
+    <div class="rev-btns">
+      <button class="btn ghost" onclick="revPrev()">◀ 前</button>
+      <button class="btn" onclick="revFlip()">めくる</button>
+      <button class="btn ghost" onclick="revNext()">次 ▶</button>
+    </div>
+    <div class="rev-btns">
+      <button class="btn ghost" onclick="revShuffle()">シャッフル</button>
+      <button class="btn ghost" onclick="closeReview()">閉じる</button>
+    </div>
+    <div class="rev-hint">スペース＝めくる ／ ← →＝前後 ／ Esc＝閉じる</div>
+  </div>
 </div>
 
 <nav>
@@ -542,9 +620,23 @@ function esc(t){return (t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>'
 function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800)}
 function tagStr(c){
   if(c.type==='red')return'赤角';
-  let s=`R${c.rule} G${c.gut}`;
-  if(c.sizeFlag)s+=' S!';
+  let s=(c.rule==='+'?'ルール内':'ルール外')+'・'+(c.gut==='+'?'直感◯':'直感✕');
+  if(c.sizeFlag)s+='・量!';
   return s;
+}
+function classLabel(c){
+  if(c.type==='red')return'赤角（迷わず確信して失敗）';
+  if(c.rule==='+'&&c.gut==='−')return'①ルール内だが直感は不安';
+  if(c.rule==='−'&&c.gut==='+')return'②ルール外だが直感は◯';
+  if(c.sizeFlag)return'③ポジション量に不安';
+  return'';
+}
+function cardMatches(c,t){
+  if(!t)return true;
+  const hay=[c.ticker,c.size,c.q1,c.q2,c.q3,c.action,
+    c.back&&c.back.lesson,c.back&&c.back.q5,c.back&&c.back.q6,c.back&&c.back.result
+  ].filter(Boolean).join(' ').toLowerCase();
+  return hay.includes(t.toLowerCase());
 }
 
 /* ---------- 記入フォーム ---------- */
@@ -558,12 +650,12 @@ function setMode(m){
   $('form-red').classList.toggle('hidden',m!=='red');
 }
 function togglePM(b){
-  const plus=b.textContent.includes('+');
-  const base=b.id==='n-rule'?'R':'G';
-  b.textContent=base+(plus?'−':'+');
+  const next=b.dataset.v==='+'?'−':'+';
+  b.dataset.v=next;
+  const plus=next==='+';
+  b.textContent=b.id==='n-rule'?(plus?'ルール内':'ルール外'):(plus?'直感◯':'直感✕（不安）');
   b.classList.remove('matsu','shu');
-  b.classList.add(plus?'shu':'matsu');
-  b.classList.add('on');
+  b.classList.add('on',plus?'matsu':'shu');
   cornerPreview();
 }
 function toggleFlag(b){b.classList.toggle('on');if(b.id==='n-sflag')cornerPreview();}
@@ -578,15 +670,17 @@ function setupChips(id,single=true){
 }
 function chipVal(id){const b=$(id).querySelector('.chip.on');return b?b.dataset.v:null}
 function cornerPreview(){
-  const r=$('n-rule').textContent,g=$('n-gut').textContent;
-  $('corner-preview').textContent=r+' '+g+($('n-sflag').classList.contains('on')?' S!':'');
+  const r=$('n-rule').dataset.v==='+'?'ルール内':'ルール外';
+  const g=$('n-gut').dataset.v==='+'?'直感◯':'直感✕';
+  $('corner-preview').textContent=r+'・'+g+($('n-sflag').classList.contains('on')?'・量!':'');
 }
 function clearNormal(){
   $('n-date').value=today();$('n-ticker').value='';$('n-size').value='';
   $('n-q1').value='';$('n-q2').value='';$('n-q3').value='';
   ['n-mood','n-action'].forEach(id=>$(id).querySelectorAll('.chip').forEach(x=>x.classList.remove('on')));
   ['n-sflag','n-loss'].forEach(id=>$(id).classList.remove('on'));
-  $('n-rule').textContent='R+';$('n-gut').textContent='G+';
+  $('n-rule').dataset.v='+';$('n-rule').textContent='ルール内';
+  $('n-gut').dataset.v='+';$('n-gut').textContent='直感◯';
   ['n-rule','n-gut'].forEach(id=>{$(id).classList.remove('shu');$(id).classList.add('on','matsu')});
   cornerPreview();
 }
@@ -605,7 +699,7 @@ async function saveNormal(){
   const front={
     date:$('n-date').value||today(),ticker,size:$('n-size').value.trim(),
     mood:chipVal('n-mood'),
-    rule:$('n-rule').textContent.slice(1),gut:$('n-gut').textContent.slice(1),
+    rule:$('n-rule').dataset.v,gut:$('n-gut').dataset.v,
     sizeFlag:$('n-sflag').classList.contains('on'),
     lossBefore:$('n-loss').classList.contains('on'),
     action,q1:$('n-q1').value.trim(),q2,q3
@@ -674,7 +768,8 @@ function editFront(id){
     $('n-date').value=c.date;$('n-ticker').value=c.ticker;$('n-size').value=c.size||'';
     $('n-q1').value=c.q1||'';$('n-q2').value=c.q2||'';$('n-q3').value=c.q3||'';
     setChip('n-mood',c.mood);setChip('n-action',c.action);
-    $('n-rule').textContent='R'+c.rule;$('n-gut').textContent='G'+c.gut;
+    $('n-rule').dataset.v=c.rule;$('n-rule').textContent=c.rule==='+'?'ルール内':'ルール外';
+    $('n-gut').dataset.v=c.gut;$('n-gut').textContent=c.gut==='+'?'直感◯':'直感✕（不安）';
     [['n-rule',c.rule],['n-gut',c.gut]].forEach(([bid,v])=>{
       const b=$(bid);b.classList.remove('matsu','shu');b.classList.add('on',v==='+'?'matsu':'shu');
     });
@@ -703,19 +798,25 @@ function boxOf(c){
   if(c.type==='red')return'red';
   return c.back.process==='OK'?'good':'bad';
 }
+function currentFiltered(){
+  return cards.filter(c=>{
+    const b=boxOf(c);
+    let pass;
+    if(filter==='all')pass=true;
+    else if(filter==='miokuri')pass=c.action==='見送り';
+    else if(filter==='red')pass=b==='red';
+    else pass=b===filter;
+    return pass&&cardMatches(c,searchTerm);
+  });
+}
 function renderBox(){
   const list=$('box-list');
-  let arr=cards.filter(c=>{
-    const b=boxOf(c);
-    if(filter==='all')return true;
-    if(filter==='miokuri')return c.action==='見送り';
-    if(filter==='red')return b==='red';
-    return b===filter;
-  });
+  const arr=currentFiltered();
   if(!arr.length){
-    list.innerHTML='<div class="empty">まだカードがありません。<br>迷ったら、まず表面を書く。</div>';
+    list.innerHTML='<div class="empty">'+(searchTerm?'検索に一致するカードがありません。':'まだカードがありません。<br>迷ったら、まず表面を書く。')+'</div>';
     return;
   }
+  if(boxView==='spread'){renderSpread(arr);return}
   list.innerHTML='';
   const open=arr.filter(c=>!c.resolved), done=arr.filter(c=>c.resolved);
   if(open.length&&filter!=='good'&&filter!=='bad'&&filter!=='red'){
@@ -726,6 +827,43 @@ function renderBox(){
     if(open.length)list.insertAdjacentHTML('beforeend','<div class="sec-title">決着済み（教訓でめくる）</div>');
     done.forEach(c=>list.insertAdjacentHTML('beforeend',doneItem(c)));
   }
+  list.querySelectorAll('.deck-item').forEach((el,i)=>{
+    if(i<16){el.classList.add('deal');el.style.animationDelay=(i*35)+'ms';}
+  });
+}
+function renderSpread(arr){
+  const list=$('box-list');
+  let h='<div class="spread">';
+  arr.forEach(c=>{
+    const red=c.type==='red';
+    const cl=classLabel(c);
+    h+=`<div class="pair" onclick="${c.resolved?`openDetail(${c.id})`:`openBackForm(${c.id})`}">`;
+    h+=`<div class="mini ${red?'redc':''}">
+      <div class="mhead">${esc(c.ticker)}　<span style="font-weight:400;font-size:11.5px;color:var(--ink-soft)">${fmtD(c.date)}${c.mood?'　地合い:'+c.mood:''}</span></div>
+      <div class="mtag ${(!c.resolved||boxOf(c)==='good')?'':'ng'}">${cl||tagStr(c)}${c.lossBefore?'・直前損失あり':''}</div>
+      ${c.size?`<div class="mq">玉・量</div><div>${esc(c.size)}</div>`:''}
+      ${c.q1?`<div class="mq">Q1 ルール上</div><div>${esc(c.q1)}</div>`:''}
+      <div class="mq">Q2 本音</div><div>${esc(c.q2)}</div>
+      ${c.q3?`<div class="mq">Q3 撤退条件</div><div>${esc(c.q3)}</div>`:''}
+      ${c.action?`<div class="mq">執行</div><div>${esc(c.action)}</div>`:''}
+    </div>`;
+    if(c.resolved){
+      const ok=c.back.process==='OK';
+      h+=`<div class="mini backside">
+        <div class="mlesson">${esc(c.back.lesson)}</div>
+        ${c.back.result?`<div class="mq">Q4 結果</div><div>${esc(c.back.result)}</div>`:''}
+        ${c.back.after?`<div class="mq">その後</div><div>${c.back.after==='下'?'下がった（見送り正解）':'上がった'}</div>`:''}
+        ${c.back.q5?`<div class="mq">Q5 どうすべきだった</div><div>${esc(c.back.q5)}</div>`:''}
+        ${c.back.q6?`<div class="mq">Q6 なぜやらなかった</div><div>${esc(c.back.q6)}</div>`:''}
+        <div style="margin-top:8px">${ok?'<span class="badge ok">OK 遵守</span>':'<span class="badge ng">NG 逸脱</span>'}</div>
+      </div>`;
+    }else{
+      h+=`<div class="mini openb">未決着 — クリックで裏面を書く</div>`;
+    }
+    h+=`</div>`;
+  });
+  h+='</div>';
+  list.innerHTML=h;
 }
 function openItem(c){
   return `<div class="deck-item open-card" onclick="openBackForm(${c.id})">
@@ -741,6 +879,64 @@ function doneItem(c){
     <div class="meta">${fmtD(c.date)}　${esc(c.ticker)}　<span class="tag ${b!=='good'?'ng':''}">${tagStr(c)}</span>　${badge}</div>
   </div>`;
 }
+
+/* ---------- めくりモード ---------- */
+let boxView='list',searchTerm='';
+let revCards=[],revIdx=0,revFlipped=false;
+function openReview(){
+  revCards=currentFiltered().filter(c=>c.resolved);
+  if(!revCards.length){toast('決着済みのカードがありません');return}
+  revIdx=0;revFlipped=false;
+  renderRev();
+  $('rev-ov').classList.remove('hidden');
+}
+function renderRev(){
+  const c=revCards[revIdx];
+  $('rev-count').textContent=(revIdx+1)+' / '+revCards.length;
+  const ngc=(boxOf(c)!=='good')?'ng':'';
+  $('rev-card').innerHTML=`
+  <div class="flip ${revFlipped?'back':''}" id="rev-flip" onclick="revFlip()">
+    <div class="face">
+      <div class="head"><span class="t">${esc(c.ticker)}</span><span class="d">${fmtD(c.date)}</span></div>
+      <div class="cornertag ${ngc}" style="margin-bottom:10px">${classLabel(c)||tagStr(c)}${c.lossBefore?'　直前損失あり':''}</div>
+      ${c.size?`<div class="qa"><div class="q">玉・量</div><div class="a">${esc(c.size)}${c.mood?'　／　地合い: '+c.mood:''}</div></div>`:''}
+      ${c.q1?`<div class="qa"><div class="q">Q1 ルール上</div><div class="a">${esc(c.q1)}</div></div>`:''}
+      <div class="qa"><div class="q">Q2 本音</div><div class="a">${esc(c.q2)}</div></div>
+      ${c.q3?`<div class="qa"><div class="q">Q3 撤退条件</div><div class="a">${esc(c.q3)}</div></div>`:''}
+      ${c.action?`<div class="qa"><div class="q">執行</div><div class="a">${esc(c.action)}</div></div>`:''}
+      <div class="rev-hint">— この状況、どうすべきだったか？ クリックで答え合わせ —</div>
+    </div>
+    <div class="face b">
+      <div class="lesson-big serif">${esc(c.back.lesson)}</div>
+      ${c.back.result?`<div class="qa"><div class="q">Q4 結果</div><div class="a">${esc(c.back.result)}</div></div>`:''}
+      ${c.back.after?`<div class="qa"><div class="q">その後</div><div class="a">${c.back.after==='下'?'下がった（見送り正解）':'上がった'}</div></div>`:''}
+      ${c.back.q5?`<div class="qa"><div class="q">Q5 どうすべきだった</div><div class="a">${esc(c.back.q5)}</div></div>`:''}
+      ${c.back.q6?`<div class="qa"><div class="q">Q6 なぜやらなかった</div><div class="a">${esc(c.back.q6)}</div></div>`:''}
+      <div class="qa">${c.back.process==='OK'?'<span class="badge ok">OK 遵守</span>':'<span class="badge ng">NG 逸脱</span>'}</div>
+    </div>
+  </div>`;
+}
+function revFlip(){revFlipped=!revFlipped;const f=$('rev-flip');if(f)f.classList.toggle('back',revFlipped)}
+function revNext(){if(!revCards.length)return;revIdx=(revIdx+1)%revCards.length;revFlipped=false;renderRev()}
+function revPrev(){if(!revCards.length)return;revIdx=(revIdx-1+revCards.length)%revCards.length;revFlipped=false;renderRev()}
+function revShuffle(){
+  for(let i=revCards.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [revCards[i],revCards[j]]=[revCards[j],revCards[i]];
+  }
+  revIdx=0;revFlipped=false;renderRev();toast('シャッフルしました');
+}
+function closeReview(){$('rev-ov').classList.add('hidden')}
+document.addEventListener('keydown',e=>{
+  if(!$('rev-ov').classList.contains('hidden')){
+    if(e.key==='ArrowRight')revNext();
+    else if(e.key==='ArrowLeft')revPrev();
+    else if(e.key===' '||e.key==='Enter'){e.preventDefault();revFlip();}
+    else if(e.key==='Escape')closeReview();
+  }else if(!$('overlay').classList.contains('hidden')&&e.key==='Escape'){
+    closeOverlay();
+  }
+});
 
 /* ---------- 裏面記入 ---------- */
 function openBackForm(id){
@@ -877,12 +1073,12 @@ function renderStats(){
     <div class="stat"><div class="n">${avgR!==null?avgR+'R':'—'}</div><div class="l">迷いトレード平均R（${rs.length}件）</div></div>`;
   /* タグ×プロセス */
   const rows=[
-    ['R+ G−（ルール内・不安）',c=>c.rule==='+'&&c.gut==='−'],
-    ['R− G+（ルール外・直感）',c=>c.rule==='−'&&c.gut==='+'],
-    ['S!（量に不安）',c=>c.sizeFlag],
+    ['①ルール内・直感✕',c=>c.rule==='+'&&c.gut==='−'],
+    ['②ルール外・直感◯',c=>c.rule==='−'&&c.gut==='+'],
+    ['③量に不安',c=>c.sizeFlag],
     ['直前損失あり',c=>c.lossBefore],
   ];
-  let t='<tr><th>角の記号</th><th>枚数</th><th>OK</th><th>NG</th></tr>';
+  let t='<tr><th>迷いの型</th><th>枚数</th><th>OK</th><th>NG</th></tr>';
   rows.forEach(([label,fn])=>{
     const g=normalDone.filter(fn);
     t+=`<tr><td>${label}</td><td>${g.length}</td><td class="ok">${g.filter(c=>c.back.process==='OK').length}</td><td class="ng">${g.filter(c=>c.back.process==='NG').length}</td></tr>`;
@@ -899,7 +1095,7 @@ function renderStats(){
 function cardText(c,i){
   let s=`--- カード${i+1} ${c.type==='red'?'【赤角・確信して失敗】':''}\n`;
   s+=`日付:${fmtD(c.date)} 銘柄:${c.ticker} ${c.size?'玉:'+c.size:''} ${c.mood?'地合い:'+c.mood:''}\n`;
-  if(c.type==='normal')s+=`角:${tagStr(c)}${c.lossBefore?' 直前損失あり':''} 執行:${c.action}\n`;
+  if(c.type==='normal')s+=`状態:${tagStr(c)}${c.lossBefore?' 直前損失あり':''} 執行:${c.action}\n`;
   if(c.q1)s+=`Q1ルール上: ${c.q1}\n`;
   s+=`Q2本音: ${c.q2}\n`;
   if(c.q3)s+=`Q3撤退条件: ${c.q3}\n`;
@@ -964,6 +1160,12 @@ $('box-filter').querySelectorAll('.chip').forEach(b=>b.addEventListener('click',
   $('box-filter').querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
   b.classList.add('on');filter=b.dataset.f;renderBox();
 }));
+document.querySelectorAll('.vchip').forEach(b=>b.addEventListener('click',()=>{
+  if(b.dataset.v==='review'){openReview();return}
+  document.querySelectorAll('.vchip').forEach(x=>{if(x.dataset.v!=='review')x.classList.remove('on')});
+  b.classList.add('on');boxView=b.dataset.v;renderBox();
+}));
+$('searchbox').addEventListener('input',e=>{searchTerm=e.target.value.trim();renderBox();});
 $('n-date').value=today();$('r-date').value=today();
 cornerPreview();
 load();
